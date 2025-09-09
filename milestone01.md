@@ -29,15 +29,6 @@ First take a look at the default network topology and take note there is 1 uplin
 ### Configuring pfSense
 When iporting the ISO file we need to determine the parametrs of our box. Per the documentation the requieremtns are
 
-Set Interface IP Addresses to the following 
-* WAN/em0 (vmx0) 
-    static ip of 192.168.3.x/24 
-    gateway of 192.168.3.250 
-* LAN/em1 (vmx1) 
-    static ip of 10.0.17.2/24 
-
- Tis 
-
 Name box pf-x
 * ESXi7 Compatibility (You can export it later as an OVA if you want) 
 * Other FreeBSD (64-bit) 12+
@@ -46,11 +37,43 @@ Name box pf-x
 * THIN provision the disk 
 * 2 Network Cards 
 * One assigned to the VM Network 
-* Another assigned to 350-Internal 
+* Another assigned to 350-Internal
+
 
 Follow prompts to install pfSense
 
 Use the numbered options to Assign and Configure interfaces. All options are self explanitory when assigning IP addresses. The Assignmnets are 
+
+Set Interface IP Addresses to the following 
+* WAN/em0 (vmx0) 
+    static ip of 192.168.3.x/24 
+    gateway of 192.168.3.250 
+* LAN/em1 (vmx1) 
+    static ip of 10.0.17.2/24 
+
+
+### Configuring MGMT01
+
+Name box pf-x
+* ESXi7 Compatibility (You can export it later as an OVA if you want) 
+* Unbuntu (64-bit)
+* Location on datastore2
+* 2cpu, 5GiB RAM, 30gb disk
+* THIN provision the disk 
+* 2 Network Cards 
+* One assigned to the VM Network (for now)
+* Choose the minimal installation
+* Power off and remove cdrom
+* Move to 350-internal
+
+Once installed and restarted we can use the GUI network manager to add our network info,
+
+* IP Address of 10.0.17.100/24 
+    Gateway is 10.0.17.2 
+    DNS is also 1.1.1.1 
+
+
+
 
 
 
