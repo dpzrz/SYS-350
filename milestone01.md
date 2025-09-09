@@ -45,11 +45,11 @@ Follow prompts to install pfSense
 Use the numbered options to Assign and Configure interfaces. All options are self explanitory when assigning IP addresses. The Assignmnets are 
 
 Set Interface IP Addresses to the following 
-* WAN/em0 (vmx0) 
-    static ip of 192.168.3.x/24 
-    gateway of 192.168.3.250 
+* WAN/em0 (vmx0)
+    - static ip of 192.168.3.x/24 
+    - gateway of 192.168.3.250 
 * LAN/em1 (vmx1) 
-    static ip of 10.0.17.2/24 
+    - static ip of 10.0.17.2/24 
 
 
 ### Configuring MGMT01
@@ -69,8 +69,8 @@ Name box pf-x
 Once installed and restarted we can use the GUI network manager to add our network info,
 
 * IP Address of 10.0.17.100/24 
-    Gateway is 10.0.17.2 
-    DNS is also 1.1.1.1 
+    - Gateway is 10.0.17.2 
+    - DNS is also 1.1.1.1 
 
 
 
