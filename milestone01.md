@@ -80,6 +80,23 @@ Once installed and restarted we can use the GUI network manager to add our netwo
 
 
 1. ######  `Screenshot showing successful login to your ESXi host`
+
+<img width="1179" height="907" alt="Screenshot 2025-09-09 at 11 19 20 AM" src="https://github.com/user-attachments/assets/53909fa4-2681-4772-8a34-2c636a5d6556" />
    
-3. ######   `Screenshot showing your two datastores, where the second one has a directory of two iso files`
+2. ######   `Screenshot showing your two datastores, where the second one has a directory of two iso files`
+
+<img width="1179" height="757" alt="image" src="https://github.com/user-attachments/assets/bb6ea558-c29a-4d7f-90a0-cd44d81082aa" />
+
+
+<img width="1026" height="816" alt="image" src="https://github.com/user-attachments/assets/a44ad84a-4ccd-4773-880f-89084ad93c84" />
+
+3. ######   `Screenshot showing your virtual switch and associated port group`
+
+<img width="1026" height="454" alt="image" src="https://github.com/user-attachments/assets/47d18648-d44b-4d10-a2fe-5393c2f3b92e" />
+
 4. ######  `Screenshot from your mgmt1 box showing your 10.0.17.0/24 address as well as your successful ping to an internet host`
+
+<img width="1122" height="875" alt="image" src="https://github.com/user-attachments/assets/b2daf25c-f82c-45b7-a8ff-3fab2c32e2c8" />
+
+
+
