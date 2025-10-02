@@ -8,7 +8,7 @@
 
 
 
-# pfSense Firewall Rules
+# pfSense Firewall Rules Milestone 03
 
 ## 1. Allow DMZ and MGMT networks to access the Internet
 
