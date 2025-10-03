@@ -1,10 +1,10 @@
-# Step 1: Add Server 19 and VCSA ISOs to DataStore 2
+## Step 1: Add Server 19 and VCSA ISOs to DataStore 2
 
-# Step 2: DC1-350
+## Step 2: DC1-350
 
-# Step 3: vCenter Installation
+## Step 3: vCenter Installation
 
-# Step 4: SSO Integration
+## Step 4: SSO Integration
 
 
 
