@@ -1,7 +1,9 @@
 # Lab Instructions
 
 ## 1. Add New Virtual Networks
-- Add 2 new virtual networks on your host: **DMZ** and **MGMT**  
+- Add 2 new virtual networks on your host: **DMZ** and **MGMT**
+  <img width="823" height="351" alt="Screenshot 2025-09-23 171514" src="https://github.com/user-attachments/assets/bf4355bd-9758-43d6-9da1-e7d9fadf29d8" />
+
 - Connect new adapters for those networks to your **pfSense firewall**  
 - Select appropriate subnet/network addresses for those networks and assign IPs to the pfSense interfaces  
 - Reference **M1** where we created our initial **SYS350 LAN** network  
