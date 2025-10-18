@@ -8,12 +8,12 @@
 This Python script connects to a **VMware vCenter Server** using **PyVMOMI**, VMware’s official Python SDK.
 It authenticates with user credentials read from a configuration file, retrieves session information, and provides a command-line menu for interacting with the vCenter environment.
 
-## 🧩 **Code Breakdown**
+## Code Breakdown
 
 
-### 🔹 **Imports**
+### Imports
 
-```python
+```
 import ssl
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
@@ -31,7 +31,7 @@ ssl : Creates a secure connection context and disables certificate verification 
 
 ### Credential Handling
 
-```python
+```
 VCENTER = config.vcenter1
 USERNAME = config.username1
 PASSWORD = getpass.getpass()
@@ -57,7 +57,7 @@ Connects to the vCenter Server with the given credentials and returns a **servic
 
 ---
 
-### 🔹 **Retrieve Session Info**
+### Retrieve Session Info
 
 ```
 session = si.content.sessionManager.currentSession
@@ -84,9 +84,9 @@ Displays formatted session details confirming a successful login.
 
 ---
 
-### 🔹 **Return the Session Instance**
+### Return the Session Instance
 
-```python
+```
     return si
 ```
 
@@ -94,7 +94,7 @@ Returns the active connection (`si`) for use by other functions.
 
 ---
 
-### 🔹 **Search Virtual Machines**
+### Search Virtual Machines
 
 ```python
 def search_vms(si, name_filter=None):
@@ -127,6 +127,7 @@ def get_vm_info(vm):
 ```
 
 `vm.summary` gives a snapshot of the VM’s configuration and runtime info.
+
 IP address is pulled from VMware Tools (or labeled if unavailable).
 
 ```
@@ -204,13 +205,6 @@ Displays a simple interactive menu for the user to select an action.
             print("Invalid choice. Please try again.")
 ```
 
-| Option | Action                               |
-| :----- | :----------------------------------- |
-| `1`    | Run the VM search/filter function    |
-| `2`    | Display vCenter product/version info |
-| `3`    | Disconnect and exit the script       |
-
----
 
 ### Script Main
 
