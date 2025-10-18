@@ -235,6 +235,8 @@ When run directly, the script:
   [Pyvmomi Info](https://vcloudnine.de/first-steps-with-python-and-pyvmomi-vsphere-sdk-for-python/)
   
   [VM Scan](https://vthinkbeyondvm.com/pyvmomi-tutorial-how-to-get-all-the-core-vcenter-server-inventory-objects-and-play-around/)
+
+  [Python Menu](https://www.youtube.com/watch?v=63nw00JqHo0)
   
   
 
