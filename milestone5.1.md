@@ -224,4 +224,13 @@ When run directly, the script:
   2. Launches the main interactive menu.
   3. Keeps the session alive until the user chooses to disconnect.
 
+  ---
+
+  Resources:
+
+  [Lisiting VM's](https://read.virtualizeplanet.com/?p=1869)
+  [VM Properties](https://gist.github.com/kurtn3x/5984f007796af987686dd875a638bdf0)
+  [Pyvmomi Info](https://vcloudnine.de/first-steps-with-python-and-pyvmomi-vsphere-sdk-for-python/)
+  [VM Scan](https://vthinkbeyondvm.com/pyvmomi-tutorial-how-to-get-all-the-core-vcenter-server-inventory-objects-and-play-around/)
+  
 
