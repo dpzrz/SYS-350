@@ -33,13 +33,6 @@ import getpass
 import config
 ```
 
-ssl : Creates a secure connection context and disables certificate verification (lab use). |
-| `pyVim.connect` | Handles connections to vCenter (`SmartConnect`, `Disconnect`).                       |
-| `pyVmomi.vim`   | Accesses vSphere managed objects (VMs, Hosts, Datastores, etc.).                     |
-| `getpass`       | Securely reads a password input without showing it in the terminal.                  |
-| `config`        | External Python file containing vCenter hostname and username.                       |
-
----
 
 ### Credential Handling
 
