@@ -5,8 +5,20 @@
 
 ## Deliverables
 
-This Python script connects to a **VMware vCenter Server** using **PyVMOMI**, VMware’s official Python SDK.
-It authenticates with user credentials read from a configuration file, retrieves session information, and provides a command-line menu for interacting with the vCenter environment.
+* Requirement 1:  Read your vmware username and vcenter hostname from a file.
+
+* Requirement 2:  Provide data from your current pyvmomi session.  This must include DOMAIN/username, vcenter server and your source IP address.
+Pull the domain/username and source ip from the connection information and vcenter_server can be the variable you read from your configuration file.
+
+* Requirement 3:  Create a search function that filters all vms in vcenter by name. If no filter is added, return all VMs
+
+* Requirement 4:  For each VM returned, provide the following meta-data
+VM Name
+Power State
+Number of CPUs
+Memory in GB
+IP Address (don't forget to add vmware tools to pf and any other "on" system that does not have an IP address returned.
+
 
 ## Code Breakdown
 
