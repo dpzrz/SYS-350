@@ -13,7 +13,7 @@ It authenticates with user credentials read from a configuration file, retrieves
 
 ### Imports
 
-```
+```python
 import ssl
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
@@ -31,7 +31,7 @@ ssl : Creates a secure connection context and disables certificate verification 
 
 ### Credential Handling
 
-```
+```python
 VCENTER = config.vcenter1
 USERNAME = config.username1
 PASSWORD = getpass.getpass()
@@ -43,7 +43,7 @@ Securely requests the **password** using `getpass()` so it isn’t stored in pla
 
 ### Connect to vCenter
 
-```
+```python
 def connect_vcenter():
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     ctx.verify_mode = ssl.CERT_NONE
@@ -59,7 +59,7 @@ Connects to the vCenter Server with the given credentials and returns a **servic
 
 ### Retrieve Session Info
 
-```
+```python
 session = si.content.sessionManager.currentSession
 domain_user = session.userName
 source_ip = session.ipAddress
@@ -72,7 +72,7 @@ source_ip = session.ipAddress
 
 ### Print Connection Summary
 
-```
+```python
 print("\n=== Session Info ===")
 print(f"vCenter Server : {VCENTER}")
 print(f"Username       : {domain_user}")
@@ -86,7 +86,7 @@ Displays formatted session details confirming a successful login.
 
 ### Return the Session Instance
 
-```
+```python
     return si
 ```
 
@@ -107,7 +107,7 @@ def search_vms(si, name_filter=None):
 * Retrieves all virtual machines from vCenter’s inventory.
 * Creates a **ContainerView** that lists every `VirtualMachine` object.
 
-```
+```python
 if name_filter:
   vms = [vm for vm in vms if name_filter.lower() in vm.name.lower()]
   return vms
@@ -120,7 +120,7 @@ s
 
 ### Get VM Info Function
 
-```
+```python
 def get_vm_info(vm):
     s = vm.summary
     ip = s.guest.ipAddress or "No IP (VMware Tools off)"
@@ -130,7 +130,7 @@ def get_vm_info(vm):
 
 IP address is pulled from VMware Tools (or labeled if unavailable).
 
-```
+```python
     return {
         "VM Name": vm.name,
         "Power State": s.runtime.powerState,
@@ -143,7 +143,7 @@ Returns a dictionary containing the infraomting formatted above.
 
 ### Interactive VM Filter
 
-```
+```python
 def filter_vms(si):
     name = input("Enter the VM name to search for (press Enter for all): ")
     
@@ -154,7 +154,7 @@ def filter_vms(si):
 Prompts the user for a name filter.
 Calls the `search_vms()` function and counts results
 
-```
+```python
     for vm in vms:
         info = get_vm_info(vm)
         for k, v in info.items():
@@ -164,11 +164,10 @@ Calls the `search_vms()` function and counts results
 
 Prints each VM’s details in a formatted, human-readable layout.
 
----
 
 ### vCenter Information
 
-```
+```python
 def vcenterInfo(si):
     aboutInfo = si.content.about
     print(aboutInfo)
@@ -179,7 +178,7 @@ Retrieves the starter statemnt we usde in the begginging of the activity. This s
 
 ### Main Menu System
 
-```
+```python
 def main_menu(si):
     while True:
         print("\n=== VMware vCenter Menu ===")
@@ -192,7 +191,7 @@ def main_menu(si):
 
 Displays a simple interactive menu for the user to select an action.
 
-```
+```python
         if choice == "1":
             filter_vms(si)
         elif choice == "2":
