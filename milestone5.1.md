@@ -208,7 +208,7 @@ Displays a simple interactive menu for the user to select an action.
 
 ### Script Main
 
-```
+```python
 if __name__ == "__main__":
     si = connect_vcenter()
     main_menu(si)
