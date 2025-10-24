@@ -1,9 +1,19 @@
 
 
 
+## Nested Virtualization
+
+We first have to create our DNS entires on our DC so our soon to be created nested VMs have routes already set up. This is a pretty simple process that inlovles going into our Windows 2019 server manager and add these tou our PTR records.
+
+We used the same naming convention used in the documentaiton
+* nested1: 10.0.17.20    
+* nested2: 10.0.17.30
+* nested3: 10.0.17.40
 
 
-Step 1: DNS Entries on your domain controller
+
+
+
 
 
 <img width="583" height="284" alt="Screenshot 2025-10-06 180339" src="https://github.com/user-attachments/assets/b52ec384-4374-41df-b770-716632a1cdeb" />
