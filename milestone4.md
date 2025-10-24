@@ -52,7 +52,16 @@ This deployment process is to be carried out another 2 times for our other neste
 
 
 
+## Templates
 
+Before we start templating we must first createa  away for all these new vms to itereact wtih our nwtork. Our solution, DHCP! Were given two choices, Configure DHCP on Pfsense or on our AD box. 
+
+For this lab I configured DHCP on our AD Box. 
+
+This process invllvoes the Server Manager tool again. We need to install the DHCP service in Roles. This allows us to configure and set ranges along with scopes. Once its been installed and after a quick restart we can now configure any ranges we need. 
+
+
+### Creating our Base VM
 
 
 
