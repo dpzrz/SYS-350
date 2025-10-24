@@ -63,7 +63,16 @@ This process invllvoes the Server Manager tool again. We need to install the DHC
 
 ### Creating our Base VM
 
+We have two choices but by far the easiest of the two would be finding an exsisting isntallation image or ISO to mount and use as the base template. The one I choose to use wwas the CentOS 8 ISO.
 
+By downloading this ISO onto Managemnt I could forego the data store upload. But for this first VM were going to use our xunbuntu image we already have. Its also very imporatant that this VM is created in our Vcenter UI not our ESXI host. The base VM will be configured for:
+
+* 350-MGMT Network
+* Stick with defaults - except:
+    - Customize Hardware
+    - Expand Hard Disk and select - Thin Provision as always
+    - CD - point to ubuntu iso on your datastore
+* VM should get a DHCP IP Address 
 
 
 
