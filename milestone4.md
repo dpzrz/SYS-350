@@ -3,6 +3,7 @@
 
 
 
+Step 1: DNS Entries on your domain controller
 
 
 <img width="583" height="284" alt="Screenshot 2025-10-06 180339" src="https://github.com/user-attachments/assets/b52ec384-4374-41df-b770-716632a1cdeb" />
