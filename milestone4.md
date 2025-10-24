@@ -45,7 +45,10 @@ After the setup has been completed it should look a little something like this.
 <img width="933" height="559" alt="Screenshot 2025-10-06 at 8 16 46 PM" src="https://github.com/user-attachments/assets/de6858ad-a6a7-48b8-ac2e-7891abcd917e" />
 
 
+This deployment process is to be carried out another 2 times for our other nested VMs. The end ersult should look like this from your vcenter UI.
 
+
+<img width="622" height="611" alt="image" src="https://github.com/user-attachments/assets/05cafa89-9466-4007-aa4b-98b14e7176db" />
 
 
 
