@@ -11,9 +11,13 @@ By the end of this milestone, we go from **manually creating linked clones** to 
 
 
 `Deliverable 1.`  Hunt down the VHD file associated with your Ubuntu Base Image and give that file read only permissions. Provide a screenshot similar to the one below.
+
+
 <img width="622" height="545" alt="image" src="https://github.com/user-attachments/assets/13cd3aee-06bd-4027-ac2e-ab9464fa97a1" />
 
 `Deliverable 2.` Provide a screenshot similar to the one below that shows ‘sonofubuntu’ running as well as the very tiny difference disk attributes similar to the screenshot below.
+
+
 <img width="611" height="448" alt="image" src="https://github.com/user-attachments/assets/5760b4f4-a268-45e3-bbc5-1fd736b688c8" />
 
 Were then tasked, with creating ascript that will do all of the following:
