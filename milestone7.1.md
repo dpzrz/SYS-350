@@ -23,8 +23,11 @@ By the end of this milestone, we go from **manually creating linked clones** to 
 Were then tasked, with creating ascript that will do all of the following:
 
 `Deliverable 3.`  stop sonofubuntu
+
 `Deliverable 4.`  take a checkpoint of sonofubuntu called snapshot1
+
 `Deliverable 5.`  start sonofubuntu
+
 `Deliverable 6.`  switch sonofubuntu to another network
 <img width="622" height="438" alt="image" src="https://github.com/user-attachments/assets/3ca41d11-8319-4b4e-8367-39b814ffe5f0" />
 
@@ -33,6 +36,6 @@ Were then tasked, with creating ascript that will do all of the following:
 <img width="626" height="441" alt="image" src="https://github.com/user-attachments/assets/a9328b64-44d1-4ca8-bb11-c1f5361ef1bd" />
 
 
-### Deliverable 7.  Create a new Base VM using an OS that is not Ubuntu. Research & write a script to automate the creation of a Linked Clone of your new OS base image using Powershell. Provide a screenshot of your successful script/command(s) and a screenshot of your running OS and the virtual properties of your child disk.
+`Deliverable 7.`  Create a new Base VM using an OS that is not Ubuntu. Research & write a script to automate the creation of a Linked Clone of your new OS base image using Powershell. Provide a screenshot of your successful script/command(s) and a screenshot of your running OS and the virtual properties of your child disk.
 
 <img width="532" height="386" alt="image" src="https://github.com/user-attachments/assets/405579d8-363c-47de-856e-130970d373a5" />
