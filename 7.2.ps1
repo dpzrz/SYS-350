@@ -1,14 +1,11 @@
 function Get-VmSummary {
     [CmdletBinding()]
     param()
-
-    # Get all VMs
     $vms = Get-VM
 
     $vms | ForEach-Object {
-        # Try to get IPs (works for VMs with integration services)
         $ip = (Get-VMNetworkAdapter -VMName $_.Name).IPAddresses |
-              Where-Object { $_ -notmatch ":" } # filter IPv6 if desired
+              Where-Object { $_ -notmatch ":" } 
 
         [PSCustomObject]@{
             Name       = $_.Name
