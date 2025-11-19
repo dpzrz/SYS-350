@@ -1,136 +1,143 @@
+function Select-VMs {
+    $vms = Get-VM
+    if ($vms.Count -eq 0) { return $null }
 
-# Helper: Get Filtered VMs
-function Get-FilteredVMs {
-    param(
-        [string]$NameContains
-    )
-    if ($NameContains) {
-        return Get-VM | Where-Object { $_.Name -like "*$NameContains*" }
-    } else {
-        return Get-VM
+    Write-Host "Select VM(s):"
+    $i = 1
+    $map = @{}
+    foreach ($vm in $vms) {
+        Write-Host "[$i] $($vm.Name)"
+        $map[$i] = $vm
+        $i++
     }
+
+    $choice = Read-Host "`nEnter numbers (comma separated) or 'all'"
+    if ($choice -eq "all") { return $vms }
+
+    $indexes = $choice -split "," | ForEach-Object { $_.Trim() }
+    return $indexes | ForEach-Object { $map[[int]$_] }
 }
 
-# Restore the Latest Snapshot
 function Restore-LatestSnapshot {
-    param([VMware.VimAutomation.ViCore.Impl.V1.Inventory.VirtualMachineImpl]$VM)
+    param($VM)
 
-    $snap = Get-Snapshot -VM $VM | Sort-Object -Property Created -Descending | Select-Object -First 1
-    if (-not $snap) {
-        Write-Host "No snapshots found for $($VM.Name)"
-        return
-    }
+    $snap = Get-VMSnapshot -VMName $VM.Name |
+            Sort-Object CreationTime -Descending |
+            Select-Object -First 1
 
-    Write-Host "Restoring latest snapshot for $($VM.Name): $($snap.Name)"
-    Restore-Snapshot -Snapshot $snap -Confirm:$false
+    if (-not $snap) { return }
+
+    Restore-VMSnapshot -VMName $VM.Name -Name $snap.Name -Confirm:$false
 }
 
-# Create a Full Clone of a VM
 function Clone-FullVM {
-    param(
-        [VMware.VimAutomation.ViCore.Impl.V1.Inventory.VirtualMachineImpl]$VM,
-        [string]$CloneName,
-        [string]$Folder = $null,
-        [string]$ResourcePool = $null,
-        [string]$Datastore = $null
-    )
+    param($VM)
 
-    Write-Host "Cloning $($VM.Name) → $CloneName"
+    $CloneName = Read-Host "New clone name"
+    $CloneDir = Read-Host "Folder for clone"
 
-    $folderObj = if ($Folder)       { Get-Folder -Name $Folder }       else { $VM.Folder }
-    $rpObj     = if ($ResourcePool) { Get-ResourcePool -Name $ResourcePool } else { $VM.ResourcePool }
-    $dsObj     = if ($Datastore)    { Get-Datastore -Name $Datastore } else { $VM.DatastoreIdList | Get-Datastore }
+    $disk = (Get-VMHardDiskDrive -VMName $VM.Name).Path
+
+    $cloneFolder = Join-Path $CloneDir $CloneName
+    $cloneDisk = Join-Path $cloneFolder "$CloneName.vhdx"
+
+    New-Item -ItemType Directory -Path $cloneFolder -Force | Out-Null
+    Copy-Item $disk $cloneDisk -Force
 
     New-VM -Name $CloneName `
-           -VM $VM `
-           -VMHost $VM.VMHost `
-           -ResourcePool $rpObj `
-           -Datastore $dsObj `
-           -Location $folderObj | Out-Null
+           -Generation $VM.Generation `
+           -MemoryStartupBytes $VM.MemoryStartup `
+           -VHDPath $cloneDisk `
+           -SwitchName (Get-VMNetworkAdapter -VMName $VM.Name).SwitchName
 }
 
-# Modify CPU / Memory
 function Update-VMPerformance {
-    param(
-        [VMware.VimAutomation.ViCore.Impl.V1.Inventory.VirtualMachineImpl]$VM,
-        [int]$CPU,
-        [int]$MemoryGB
-    )
+    param($VM)
 
-    Write-Host "Updating performance for $($VM.Name)"
+    $cpu = Read-Host "New CPU count (empty to skip)"
+    $mem = Read-Host "New RAM in MB (empty to skip)"
 
-    if ($CPU) {
-        Set-VM -VM $VM -NumCPU $CPU -Confirm:$false
+    if ($cpu) {
+        Set-VMProcessor -VMName $VM.Name -Count $cpu
     }
-    if ($MemoryGB) {
-        Set-VM -VM $VM -MemoryGB $MemoryGB -Confirm:$false
+
+    if ($mem) {
+        Set-VMMemory -VMName $VM.Name -DynamicMemoryEnabled $false `
+                     -StartupBytes ($mem * 1MB)
     }
 }
 
-
-# Delete VM from Disk
 function Delete-VMFromDisk {
-    param([VMware.VimAutomation.ViCore.Impl.V1.Inventory.VirtualMachineImpl]$VM)
+    param($VM)
 
-    Write-Host "Deleting VM from disk: $($VM.Name)"
-    Remove-VM -VM $VM -DeletePermanently -Confirm:$false
+    $confirm = Read-Host "Delete $($VM.Name) permanently? (yes/no)"
+    if ($confirm -ne "yes") { return }
+
+    Stop-VM $VM.Name -Force -ErrorAction SilentlyContinue
+    $disk = (Get-VMHardDiskDrive -VMName $VM.Name).Path
+    $config = $VM.Path
+
+    Remove-VM $VM.Name -Force
+
+    if (Test-Path $disk) { Remove-Item $disk -Force }
+    if (Test-Path $config) { Remove-Item $config -Recurse -Force }
 }
 
-# Copy a File to a VM
 function Copy-FileToVM {
-    param(
-        [VMware.VimAutomation.ViCore.Impl.V1.Inventory.VirtualMachineImpl]$VM,
-        [string]$SourcePath,
-        [string]$DestinationPath,
-        [string]$Username,
-        [string]$Password
-    )
+    param($VM)
 
-    Write-Host "Copying $SourcePath → $($VM.Name):$DestinationPath"
+    $src = Read-Host "Path to source file"
+    $dst = Read-Host "Destination path inside VM"
 
-    $cred = New-Object PSCredential ($Username, (ConvertTo-SecureString $Password -AsPlainText -Force))
-
-    Copy-VMGuestFile `
-        -VM $VM `
-        -LocalToGuest `
-        -Source $SourcePath `
-        -Destination $DestinationPath `
-        -GuestUser $Username `
-        -GuestPassword $Password `
-        -Force
+    Copy-VMFile -Name $VM.Name `
+                -SourcePath $src `
+                -DestinationPath $dst `
+                -FileSource Host -CreateFullPath
 }
 
-# Execute a Command inside Guest
 function Invoke-VMCommand {
-    param(
-        [VMware.VimAutomation.ViCore.Impl.V1.Inventory.VirtualMachineImpl]$VM,
-        [string]$Command,
-        [string[]]$Arguments,
-        [string]$Username,
-        [string]$Password
-    )
+    param($VM)
 
-    Write-Host "Executing command on $($VM.Name): $Command $Arguments"
+    $cmd = Read-Host "Enter command"
 
-    Invoke-VMScript `
-        -VM $VM `
-        -ScriptText "$Command $($Arguments -join ' ')" `
-        -GuestUser $Username `
-        -GuestPassword $Password
+    Invoke-Command -VMName $VM.Name -ScriptBlock { param($cmd) Invoke-Expression $cmd } `
+                   -ArgumentList $cmd
 }
 
-# Function to apply one action to multiple VMs
-function Invoke-ActionOnFilteredVMs {
-    param(
-        [string]$NameFilter,
-        [scriptblock]$Action,
-        $Arguments
-    )
+function Show-Menu {
+    Clear-Host
+    Write-Host "========================================="
+    Write-Host "      Hyper-V Virtual Machine Manager"
+    Write-Host "=========================================`n"
+    Write-Host "[1] Restore Latest Snapshot"
+    Write-Host "[2] Clone VM"
+    Write-Host "[3] Change CPU / Memory"
+    Write-Host "[4] Delete VM"
+    Write-Host "[5] Copy File to VM"
+    Write-Host "[6] Run Command on VM"
+    Write-Host "[7] Exit`n"
 
-    $vms = Get-FilteredVMs -NameContains $NameFilter
+    return Read-Host "Choose an option"
+}
 
-    foreach ($vm in $vms) {
-        Write-Host "---- Executing on VM: $($vm.Name) ----" -ForegroundColor Cyan
-        & $Action $vm @Arguments
+while ($true) {
+    $choice = Show-Menu
+    if ($choice -eq "7") { break }
+
+    $selectedVMs = Select-VMs
+    if (-not $selectedVMs) { continue }
+
+    foreach ($vm in $selectedVMs) {
+        switch ($choice) {
+            "1" { Restore-LatestSnapshot -VM $vm }
+            "2" { Clone-FullVM -VM $vm }
+            "3" { Update-VMPerformance -VM $vm }
+            "4" { Delete-VMFromDisk -VM $vm }
+            "5" { Copy-FileToVM -VM $vm }
+            "6" { Invoke-VMCommand -VM $vm }
+        }
     }
+
+    Write-Host "`nDone. Press Enter to continue..."
+    Read-Host
 }
