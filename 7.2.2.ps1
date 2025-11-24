@@ -1,190 +1,227 @@
-```powershell
-# Hyper-V VM Management Script
+function Get-VMSummary {
+    $vms = Get-VM
 
-function Restore-LatestSnapshot {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string[]]$VMNames
-    )
-    
-    foreach ($VMName in $VMNames) {
-        $vm = Get-VM -Name $VMName
-        if ($vm.State -ne 'Off') {
-            Stop-VM -Name $VMName -Force
-        }
-        
-        $latestSnapshot = Get-VMSnapshot -VMName $VMName | Sort-Object CreationTime -Descending | Select-Object -First 1
-        if ($latestSnapshot) {
-            Restore-VMSnapshot -VMSnapshot $latestSnapshot -Confirm:$false
-            Write-Host "Restored latest snapshot for $VMName"
-        } else {
-            Write-Host "No snapshots found for $VMName"
-        }
+    Write-Host "Getting VMs..." 
+
+    foreach ($vm in $vms) {
+        $ip = (Get-VMNetworkAdapter -VMName $vm.Name).IPAddresses
+
+        Write-Host "`nVM Name: $($vm.Name)" 
+        Write-Host "Power State: $($vm.State)"
+        Write-Host "IP Address: $ip"
     }
 }
 
-function New-VMFullClone {
+
+function Get-VMDetailedInfo {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$VMName
+    )
+
+    Write-Host "Getting $VMName info" 
+
+    try {
+        $vm = Get-VM -Name $VMName -ErrorAction Stop
+        $cpu = Get-VMProcessor -VMName $VMName
+        $disk = Get-VMHardDiskDrive -VMName $VMName
+        $net = Get-VMNetworkAdapter -VMName $VMName
+
+        Write-Host "`nVM Name: $($vm.Name)" -ForegroundColor Yellow
+        Write-Host "Power State: $($vm.State)"
+        Write-Host "CPU Count: $($cpu.Count)"
+        Write-Host "Memory (in GB): $([math]::Round($vm.MemoryAssigned / 1GB, 2))"
+        Write-Host "Disk: $($disk.Path)"
+        Write-Host "Network Switch: $($net.SwitchName)"
+    }
+    catch {
+        Write-Host "Error: VM '$VMName' not found" 
+    }
+}
+
+function New-VMSnapshotCustom {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$VMName,
+        [Parameter(Mandatory=$true)]
+        [string]$SnapshotName
+    )
+
+    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+
+    if ($vm -eq $null) {
+        Write-Host "VM '$VMName' not found." 
+        return
+    }
+
+    try {
+        Checkpoint-VM -Name $VMName -SnapshotName $SnapshotName
+        Write-Host "Snapshot '$SnapshotName' created successfully for VM '$VMName'." 
+    }
+    catch {
+        Write-Host "Error creating snapshot: $_" 
+    }
+}
+
+
+function Restore-VMSnapshotCustom {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$VMName,
+        [Parameter(Mandatory=$true)]
+        [string]$SnapshotName
+    )
+
+    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+
+    if ($vm -eq $null) {
+        Write-Host "VM '$VMName' not found." 
+        return
+    }
+
+    try {
+        Restore-VMSnapshot -VMName $VMName -Name $SnapshotName -Confirm:$false
+        Write-Host "VM '$VMName' restored to snapshot '$SnapshotName' successfully."
+    }
+    catch {
+        Write-Host "Error restoring snapshot: $_" 
+    }
+}
+
+
+function Remove-VMSnapshotCustom {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$VMName,
+        [Parameter(Mandatory=$true)]
+        [string]$SnapshotName
+    )
+
+    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+
+    if ($vm -eq $null) {
+        Write-Host "VM '$VMName' not found." 
+        return
+    }
+
+    try {
+        Remove-VMSnapshot -VMName $VMName -Name $SnapshotName -Confirm:$false
+        Write-Host "Snapshot '$SnapshotName' deleted successfully from VM '$VMName'."
+    }
+    catch {
+        Write-Host "Error deleting snapshot: $_" 
+    }
+}
+
+
+function Set-VMPowerState {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$VMName,
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("Start", "Stop")]
+        [string]$Action
+    )
+
+    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+
+    if ($vm -eq $null) {
+        Write-Host "VM '$VMName' not found." 
+        return
+    }
+
+    try {
+        if ($Action -eq "Start") {
+            Start-VM -Name $VMName
+            Write-Host "VM '$VMName' started successfully." 
+        }
+        else {
+            Stop-VM -Name $VMName -Force
+            Write-Host "VM '$VMName' stopped successfully." 
+        }
+    }
+    catch {
+        Write-Host "Error changing power state: $_" 
+    }
+}
+
+
+function Copy-VMFull {
     param(
         [Parameter(Mandatory=$true)]
         [string]$SourceVMName,
         [Parameter(Mandatory=$true)]
         [string]$CloneName,
-        [Parameter(Mandatory=$true)]
-        [string]$DestinationPath
+        [Parameter(Mandatory=$false)]
+        [string]$VHDPath = "C:\Users\Public\Documents\Hyper-V\Virtual Hard Disks\"
     )
-    
-    $vm = Get-VM -Name $SourceVMName
-    if ($vm.State -ne 'Off') {
-        Stop-VM -Name $SourceVMName -Force
-    }
-    
-    $sourceVM = Get-VM -Name $SourceVMName
-    $sourceVHDs = Get-VMHardDiskDrive -VMName $SourceVMName
-    
-    Export-VM -Name $SourceVMName -Path $DestinationPath
-    
-    $exportedPath = Join-Path $DestinationPath $SourceVMName
-    $clonePath = Join-Path $DestinationPath $CloneName
-    
-    Rename-Item -Path $exportedPath -NewName $CloneName
-    
-    $vmConfigPath = Get-ChildItem -Path $clonePath -Recurse -Filter "*.vmcx" | Select-Object -First 1
-    Import-VM -Path $vmConfigPath.FullName -Copy -GenerateNewId
-    
-    Rename-VM -Name $SourceVMName -NewName $CloneName
-    
-    Write-Host "Created full clone: $CloneName"
-}
 
-function Set-VMPerformance {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string[]]$VMNames,
-        [int]$MemoryGB,
-        [int]$ProcessorCount
-    )
-    
-    foreach ($VMName in $VMNames) {
-        $vm = Get-VM -Name $VMName
-        if ($vm.State -ne 'Off') {
-            Stop-VM -Name $VMName -Force
-        }
-        
-        if ($MemoryGB) {
-            Set-VMMemory -VMName $VMName -StartupBytes ($MemoryGB * 1GB)
-            Write-Host "Set memory to $MemoryGB GB for $VMName"
-        }
-        
-        if ($ProcessorCount) {
-            Set-VMProcessor -VMName $VMName -Count $ProcessorCount
-            Write-Host "Set processor count to $ProcessorCount for $VMName"
-        }
+    $vm = Get-VM -Name $SourceVMName -ErrorAction SilentlyContinue
+
+    if ($vm -eq $null) {
+        Write-Host "VM '$SourceVMName' not found." 
+        return
+    }
+
+    try {
+        Write-Host "Cloning VM '$SourceVMName' to '$CloneName'..."
+
+        $sourceDisk = Get-VMHardDiskDrive -VMName $SourceVMName
+        $newDiskPath = Join-Path $VHDPath "$CloneName.vhdx"
+
+        # Copy the VHD
+        Write-Host "Copying virtual hard disk..." -ForegroundColor Yellow
+        Copy-Item -Path $sourceDisk.Path -Destination $newDiskPath
+
+        # Create new VM
+        Write-Host "Creating VM..." -ForegroundColor Yellow
+        New-VM -Name $CloneName -MemoryStartupBytes $vm.MemoryStartup -Generation $vm.Generation -NoVHD
+
+        # Attach the copied disk
+        Add-VMHardDiskDrive -VMName $CloneName -Path $newDiskPath
+
+        # Copy CPU configuration
+        $cpuCount = (Get-VMProcessor -VMName $SourceVMName).Count
+        Set-VMProcessor -VMName $CloneName -Count $cpuCount
+
+        # Copy network configuration
+        $sourceNet = Get-VMNetworkAdapter -VMName $SourceVMName
+        Connect-VMNetworkAdapter -VMName $CloneName -SwitchName $sourceNet.SwitchName
+
+        Write-Host "VM '$CloneName' created successfully as a clone of '$SourceVMName'."
+    }
+    catch {
+        Write-Host "Error cloning VM: $_"
     }
 }
 
-function Remove-VMFromDisk {
+function Remove-VMCustom {
     param(
         [Parameter(Mandatory=$true)]
-        [string[]]$VMNames
+        [string]$VMName,
+        [switch]$Force
     )
-    
-    foreach ($VMName in $VMNames) {
-        $vm = Get-VM -Name $VMName
-        if ($vm.State -ne 'Off') {
-            Stop-VM -Name $VMName -Force
+
+    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+
+    if ($vm -eq $null) {
+        Write-Host "VM '$VMName' not found."
+        return
+    }
+
+    if (-not $Force) {
+        $confirmation = Read-Host "Are you sure you want to delete VM '$VMName'? (Y/N)"
+        if ($confirmation -ne 'Y' -and $confirmation -ne 'y') {
+            Write-Host "VM deletion cancelled." 
+            return
         }
-        
-        $vhdPaths = (Get-VMHardDiskDrive -VMName $VMName).Path
-        $vmPath = $vm.Path
-        
+    }
+
+    try {
         Remove-VM -Name $VMName -Force
-        
-        foreach ($vhdPath in $vhdPaths) {
-            if (Test-Path $vhdPath) {
-                Remove-Item -Path $vhdPath -Force
-                Write-Host "Deleted VHD: $vhdPath"
-            }
-        }
-        
-        Write-Host "Deleted VM: $VMName"
+        Write-Host "VM '$VMName' deleted successfully."
+    }
+    catch {
+        Write-Host "Error deleting VM: $_" 
     }
 }
-
-function Copy-FileToVM {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$VMName,
-        [Parameter(Mandatory=$true)]
-        [string]$SourcePath,
-        [Parameter(Mandatory=$true)]
-        [string]$DestinationPath
-    )
-    
-    $vm = Get-VM -Name $VMName
-    if ($vm.State -ne 'Off') {
-        Stop-VM -Name $VMName -Force
-    }
-    
-    Copy-VMFile -VMName $VMName -SourcePath $SourcePath -DestinationPath $DestinationPath -FileSource Host -CreateFullPath
-    Write-Host "Copied $SourcePath to $VMName at $DestinationPath"
-}
-
-function Invoke-CommandOnVM {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$VMName,
-        [Parameter(Mandatory=$true)]
-        [string]$Command,
-        [Parameter(Mandatory=$true)]
-        [PSCredential]$Credential
-    )
-    
-    $vm = Get-VM -Name $VMName
-    if ($vm.State -ne 'Off') {
-        Stop-VM -Name $VMName -Force
-    }
-    
-    $session = New-PSSession -VMName $VMName -Credential $Credential
-    $result = Invoke-Command -Session $session -ScriptBlock {
-        param($cmd)
-        Invoke-Expression $cmd
-    } -ArgumentList $Command
-    Remove-PSSession -Session $session
-    
-    Write-Host "Executed command on $VMName"
-    return $result
-}
-
-function Start-VMPowerOn {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string[]]$VMNames
-    )
-    
-    foreach ($VMName in $VMNames) {
-        $vm = Get-VM -Name $VMName
-        if ($vm.State -ne 'Off') {
-            Stop-VM -Name $VMName -Force
-        }
-        
-        Start-VM -Name $VMName
-        Write-Host "Powered on $VMName"
-    }
-}
-
-function Stop-VMPowerOff {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string[]]$VMNames
-    )
-    
-    foreach ($VMName in $VMNames) {
-        $vm = Get-VM -Name $VMName
-        if ($vm.State -ne 'Off') {
-            Stop-VM -Name $VMName -Force
-        }
-        
-        Write-Host "Powered off $VMName"
-    }
-}
-```
