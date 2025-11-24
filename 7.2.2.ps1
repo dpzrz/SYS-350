@@ -63,32 +63,6 @@ function New-VMSnapshotCustom {
     }
 }
 
-
-function Restore-VMSnapshotCustom {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$VMName,
-        [Parameter(Mandatory=$true)]
-        [string]$SnapshotName
-    )
-
-    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
-
-    if ($vm -eq $null) {
-        Write-Host "VM '$VMName' not found." 
-        return
-    }
-
-    try {
-        Restore-VMSnapshot -VMName $VMName -Name $SnapshotName -Confirm:$false
-        Write-Host "VM '$VMName' restored to snapshot '$SnapshotName' successfully."
-    }
-    catch {
-        Write-Host "Error restoring snapshot: $_" 
-    }
-}
-
-
 function Remove-VMSnapshotCustom {
     param(
         [Parameter(Mandatory=$true)]
@@ -142,6 +116,31 @@ function Set-VMPowerState {
     }
     catch {
         Write-Host "Error changing power state: $_" 
+    }
+}
+
+
+function Restore-VMSnapshotCustom {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$VMName,
+        [Parameter(Mandatory=$true)]
+        [string]$SnapshotName
+    )
+
+    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+
+    if ($vm -eq $null) {
+        Write-Host "VM '$VMName' not found." 
+        return
+    }
+
+    try {
+        Restore-VMSnapshot -VMName $VMName -Name $SnapshotName -Confirm:$false
+        Write-Host "VM '$VMName' restored to snapshot '$SnapshotName' successfully."
+    }
+    catch {
+        Write-Host "Error restoring snapshot: $_" 
     }
 }
 
