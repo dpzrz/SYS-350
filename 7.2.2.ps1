@@ -1,3 +1,4 @@
+```powershell
 # Hyper-V VM Management Script
 
 function Restore-LatestSnapshot {
@@ -7,6 +8,11 @@ function Restore-LatestSnapshot {
     )
     
     foreach ($VMName in $VMNames) {
+        $vm = Get-VM -Name $VMName
+        if ($vm.State -ne 'Off') {
+            Stop-VM -Name $VMName -Force
+        }
+        
         $latestSnapshot = Get-VMSnapshot -VMName $VMName | Sort-Object CreationTime -Descending | Select-Object -First 1
         if ($latestSnapshot) {
             Restore-VMSnapshot -VMSnapshot $latestSnapshot -Confirm:$false
@@ -26,6 +32,11 @@ function New-VMFullClone {
         [Parameter(Mandatory=$true)]
         [string]$DestinationPath
     )
+    
+    $vm = Get-VM -Name $SourceVMName
+    if ($vm.State -ne 'Off') {
+        Stop-VM -Name $SourceVMName -Force
+    }
     
     $sourceVM = Get-VM -Name $SourceVMName
     $sourceVHDs = Get-VMHardDiskDrive -VMName $SourceVMName
@@ -55,9 +66,7 @@ function Set-VMPerformance {
     
     foreach ($VMName in $VMNames) {
         $vm = Get-VM -Name $VMName
-        $isRunning = $vm.State -eq 'Running'
-        
-        if ($isRunning) {
+        if ($vm.State -ne 'Off') {
             Stop-VM -Name $VMName -Force
         }
         
@@ -70,10 +79,6 @@ function Set-VMPerformance {
             Set-VMProcessor -VMName $VMName -Count $ProcessorCount
             Write-Host "Set processor count to $ProcessorCount for $VMName"
         }
-        
-        if ($isRunning) {
-            Start-VM -Name $VMName
-        }
     }
 }
 
@@ -85,12 +90,12 @@ function Remove-VMFromDisk {
     
     foreach ($VMName in $VMNames) {
         $vm = Get-VM -Name $VMName
-        $vhdPaths = (Get-VMHardDiskDrive -VMName $VMName).Path
-        $vmPath = $vm.Path
-        
         if ($vm.State -ne 'Off') {
             Stop-VM -Name $VMName -Force
         }
+        
+        $vhdPaths = (Get-VMHardDiskDrive -VMName $VMName).Path
+        $vmPath = $vm.Path
         
         Remove-VM -Name $VMName -Force
         
@@ -115,6 +120,11 @@ function Copy-FileToVM {
         [string]$DestinationPath
     )
     
+    $vm = Get-VM -Name $VMName
+    if ($vm.State -ne 'Off') {
+        Stop-VM -Name $VMName -Force
+    }
+    
     Copy-VMFile -VMName $VMName -SourcePath $SourcePath -DestinationPath $DestinationPath -FileSource Host -CreateFullPath
     Write-Host "Copied $SourcePath to $VMName at $DestinationPath"
 }
@@ -128,6 +138,11 @@ function Invoke-CommandOnVM {
         [Parameter(Mandatory=$true)]
         [PSCredential]$Credential
     )
+    
+    $vm = Get-VM -Name $VMName
+    if ($vm.State -ne 'Off') {
+        Stop-VM -Name $VMName -Force
+    }
     
     $session = New-PSSession -VMName $VMName -Credential $Credential
     $result = Invoke-Command -Session $session -ScriptBlock {
@@ -147,6 +162,11 @@ function Start-VMPowerOn {
     )
     
     foreach ($VMName in $VMNames) {
+        $vm = Get-VM -Name $VMName
+        if ($vm.State -ne 'Off') {
+            Stop-VM -Name $VMName -Force
+        }
+        
         Start-VM -Name $VMName
         Write-Host "Powered on $VMName"
     }
@@ -159,7 +179,12 @@ function Stop-VMPowerOff {
     )
     
     foreach ($VMName in $VMNames) {
-        Stop-VM -Name $VMName -Force
+        $vm = Get-VM -Name $VMName
+        if ($vm.State -ne 'Off') {
+            Stop-VM -Name $VMName -Force
+        }
+        
         Write-Host "Powered off $VMName"
     }
 }
+```
